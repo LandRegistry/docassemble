@@ -2614,7 +2614,7 @@ class Question:
                                     field_info['selections'] = dict()
                                 else:
                                     field_info['choicetype'] = 'manual'
-                                    field_info['selections'] = dict(values=process_selections_manual(field[key]))
+                                    field_info['selections'] = dict(values=self.process_selections_manual(field[key]))
                                     if 'datatype' not in field:
                                         auto_determine_type(field_info)
                                     for item in field_info['selections']['values']:
@@ -3720,10 +3720,13 @@ class Question:
                     if common_var is None:
                         common_var = the_saveas
                         continue
+                    mismatch = False
                     for char_index in range(len(common_var)):
                         if the_saveas[char_index] != common_var[char_index]:
+                            mismatch = True
                             break
-                    common_var = common_var[0:char_index]
+                    if mismatch:
+                        common_var = common_var[0:char_index]
                 common_var = re.sub(r'[^\]]*$', '', common_var)
                 m = re.search(r'^(.*)\[([ijklmn])\]$', common_var)
                 if not m:
@@ -4249,7 +4252,7 @@ class Question:
                         result_dict['image'] = value
                         continue
                     if key == 'help':
-                        result_dict['help'] = TextObject(value)
+                        result_dict['help'] = TextObject(value, question=self)
                         continue
                     if key == 'default':
                         result_dict['default'] = value
@@ -4263,7 +4266,7 @@ class Question:
                         result_dict['label'] = TextObject(key, question=self)
                         result_dict['key'] = TextObject(value, question=self, translate=False)
                 elif isinstance(value, dict):
-                    result_dict['label'] = TextObject(key)
+                    result_dict['label'] = TextObject(key, question=self)
                     self.embeds = True
                     if PY3:
                         result_dict['key'] = Question(value, self.interview, register_target=register_target, source=self.from_source, package=self.package, source_code=codecs.decode(bytearray(yaml.safe_dump(value, default_flow_style=False, default_style = '|', allow_unicode=True), encoding='utf-8'), 'utf-8'))
@@ -4272,11 +4275,11 @@ class Question:
                 elif isinstance(value, string_types):
                     if value in ('exit', 'logout', 'exit_logout', 'leave') and 'url' in the_dict:
                         self.embeds = True
-                        result_dict['label'] = TextObject(key)
+                        result_dict['label'] = TextObject(key, question=self)
                         result_dict['key'] = Question({'command': value, 'url': the_dict['url']}, self.interview, register_target=register_target, source=self.from_source, package=self.package)
                     elif value in ('continue', 'restart', 'refresh', 'signin', 'register', 'exit', 'logout', 'exit_logout', 'leave', 'new_session'):
                         self.embeds = True
-                        result_dict['label'] = TextObject(key)
+                        result_dict['label'] = TextObject(key, question=self)
                         result_dict['key'] = Question({'command': value}, self.interview, register_target=register_target, source=self.from_source, package=self.package)
                     elif key == 'url':
                         pass
@@ -4284,7 +4287,7 @@ class Question:
                         result_dict['label'] = TextObject(key, question=self)
                         result_dict['key'] = TextObject(key, question=self, translate=False)
                 elif isinstance(value, bool):
-                    result_dict['label'] = TextObject(key)
+                    result_dict['label'] = TextObject(key, question=self)
                     result_dict['key'] = value
                 else:
                     raise DAError("Unknown data type in parse_fields:" + str(type(value)) + ".  " + self.idebug(the_list))
@@ -4383,13 +4386,12 @@ class Question:
                         docassemble.base.functions.set_context('docx', template=result['template'])
                         try:
                             the_template = result['template']
-                            while True: # Rerender if there's a subdoc using include_docx_template
+                            while True:
                                 old_count = docassemble.base.functions.this_thread.misc.get('docx_include_count', 0)
                                 the_template.render(result['field_data'], jinja_env=custom_jinja_env())
                                 if docassemble.base.functions.this_thread.misc.get('docx_include_count', 0) > old_count and old_count < 10:
-                                    # There's another template included
                                     new_template_file = tempfile.NamedTemporaryFile(prefix="datemp", mode="wb", suffix=".docx", delete=False)
-                                    the_template.save(new_template_file.name) # Save and refresh the template
+                                    the_template.save(new_template_file.name)
                                     the_template = docassemble.base.file_docx.DocxTemplate(new_template_file.name)
                                     docassemble.base.functions.this_thread.misc['docx_template'] = the_template
                                 else:
@@ -6369,56 +6371,6 @@ def process_selections(data, manual=False, exclude=None):
                     logmessage("process_selections: non-label passed as label in dictionary")
     else:
         raise DAError("Unknown data type in choices selection: " + re.sub(r'[<>]', '', repr(data)))
-    return(result)
-
-def process_selections_manual(data):
-    result = []
-    if isinstance(data, list):
-        for entry in data:
-            if isinstance(entry, dict):
-                the_item = dict()
-                for key in entry:
-                    if len(entry) > 1:
-                        if key in ['default', 'help', 'image']:
-                            continue
-                        if 'key' in entry and 'label' in entry and key != 'key':
-                            continue
-                        if 'default' in entry:
-                            the_item['default'] = entry['default']
-                        if 'help' in entry:
-                            the_item['help'] = TextObject(entry['help'])
-                        if 'image' in entry:
-                            if entry['image'].__class__.__name__ == 'DAFile':
-                                entry['image'].retrieve()
-                                if entry['image'].mimetype is not None and entry['image'].mimetype.startswith('image'):
-                                    the_item['image'] = dict(type='url', value=entry['image'].url_for())
-                            elif entry['image'].__class__.__name__ == 'DAFileList':
-                                entry['image'][0].retrieve()
-                                if entry['image'][0].mimetype is not None and entry['image'][0].mimetype.startswith('image'):
-                                    the_item['image'] = dict(type='url', value=entry['image'][0].url_for())
-                            elif entry['image'].__class__.__name__ == 'DAStaticFile':
-                                the_item['image'] = dict(type='url', value=entry['image'].url_for())
-                            else:
-                                the_item['image'] = dict(type='decoration', value=entry['image'])
-                        if 'key' in entry and 'label' in entry:
-                            the_item['key'] = TextObject(entry['key'])
-                            the_item['label'] = TextObject(entry['label'])
-                            result.append(the_item)
-                            continue
-                    the_item['key'] = TextObject(entry[key])
-                    the_item['label'] = TextObject(key)
-                    result.append(the_item)
-            if isinstance(entry, list):
-                result.append(dict(key=TextObject(entry[0]), label=TextObject(entry[1])))
-            elif isinstance(entry, string_types):
-                result.append(dict(key=TextObject(entry), label=TextObject(entry)))
-            elif isinstance(entry, (int, float, bool, NoneType)):
-                result.append(dict(key=TextObject(text_type(entry)), label=TextObject(text_type(entry))))
-    elif isinstance(data, dict):
-        for key, value in sorted(data.items(), key=operator.itemgetter(1)):
-            result.append(dict(key=TextObject(value), label=TextObject(key)))
-    else:
-        raise DAError("Unknown data type in manual choices selection: " + re.sub(r'[<>]', '', repr(data)))
     return(result)
 
 def extract_missing_name(the_error):
