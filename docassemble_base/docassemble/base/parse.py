@@ -4386,13 +4386,12 @@ class Question:
                         docassemble.base.functions.set_context('docx', template=result['template'])
                         try:
                             the_template = result['template']
-                            while True: # Rerender if there's a subdoc using include_docx_template
+                            while True:
                                 old_count = docassemble.base.functions.this_thread.misc.get('docx_include_count', 0)
                                 the_template.render(result['field_data'], jinja_env=custom_jinja_env())
                                 if docassemble.base.functions.this_thread.misc.get('docx_include_count', 0) > old_count and old_count < 10:
-                                    # There's another template included
                                     new_template_file = tempfile.NamedTemporaryFile(prefix="datemp", mode="wb", suffix=".docx", delete=False)
-                                    the_template.save(new_template_file.name) # Save and refresh the template
+                                    the_template.save(new_template_file.name)
                                     the_template = docassemble.base.file_docx.DocxTemplate(new_template_file.name)
                                     docassemble.base.functions.this_thread.misc['docx_template'] = the_template
                                 else:
