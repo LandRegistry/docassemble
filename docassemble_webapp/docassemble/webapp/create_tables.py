@@ -116,6 +116,8 @@ def populate_tables():
     #         package_entry = Package(name=package.key, package_auth=package_auth, packageversion=package.version, type='pip', core=True)
     #     db.session.add(package_auth)
     #     db.session.add(package_entry)
+    from completeInstall import completeInstall
+    completeInstall()
     return
 
 def main():
