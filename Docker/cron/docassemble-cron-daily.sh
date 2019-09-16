@@ -32,7 +32,7 @@ if [ "${AZUREENABLE:-null}" == "null" ] && [ "${AZUREACCOUNTNAME:-null}" != "nul
     blob-cmd add-account "${AZUREACCOUNTNAME}" "${AZUREACCOUNTKEY}"
 fi
 
-if [[ $CONTAINERROLE =~ .*:(all|web):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|web):.* ]]; then
     if [ "${USEHTTPS:-false}" == "true" ]; then
 	if [ "${USELETSENCRYPT:-false}" == "true" ]; then
 	    if [ -f /etc/letsencrypt/da_using_lets_encrypt ]; then
@@ -87,7 +87,7 @@ if [ "${DABACKUPDAYS}" != "0" ]; then
     BACKUPDIR="${DA_ROOT}/backup/$MONTHDAY"
     rm -rf $BACKUPDIR
     mkdir -p $BACKUPDIR
-    if [[ $CONTAINERROLE =~ .*:(all|web|celery|log|cron):.* ]]; then
+    if [[ $CONTAINERROLE =~ .*:(all|lr|web|celery|log|cron):.* ]]; then
 	rsync -auq "${DA_ROOT}/files" "${BACKUPDIR}/"
 	rsync -auq "${DA_ROOT}/config" "${BACKUPDIR}/"
 	#rsync -au --exclude '*/worker.log*' ${DA_ROOT}/log $BACKUPDIR/
@@ -97,7 +97,7 @@ if [ "${DABACKUPDAYS}" != "0" ]; then
 	rsync -auq "${LOGDIRECTORY}" "${BACKUPDIR}/"
     fi
 
-    if [[ $CONTAINERROLE =~ .*:(all|redis):.* ]]; then
+    if [[ $CONTAINERROLE =~ .*:(all|lr|redis):.* ]]; then
         if [ -f /var/lib/redis/dump.rdb ]; then
 	    cp /var/lib/redis/dump.rdb "${BACKUPDIR}/redis.rdb"
         fi

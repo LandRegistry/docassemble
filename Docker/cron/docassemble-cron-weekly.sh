@@ -28,6 +28,6 @@ if [ "${AZUREENABLE:-null}" == "null" ] && [ "${AZUREACCOUNTNAME:-null}" != "nul
     export AZUREENABLE=true
 fi
 
-if [[ $CONTAINERROLE =~ .*:(all|cron):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|cron):.* ]]; then
     "${DA_ROOT}/webapp/run-cron.sh" cron_weekly
 fi

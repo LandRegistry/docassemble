@@ -34,11 +34,11 @@ if [ -d /tmp/files ]; then
     find /tmp/files -type d -empty -delete
 fi
 
-if [[ $CONTAINERROLE =~ .*:(all|cron):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|cron):.* ]]; then
     "${DA_ROOT}/webapp/run-cron.sh" cron_hourly
     su -c "source \"${DA_ACTIVATE}\" && python -m docassemble.webapp.cleanup_sessions \"${DA_CONFIG_FILE}\"" www-data
 fi
 
-if [[ $CONTAINERROLE =~ .*:(all|web):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|web):.* ]]; then
     rsync -auq /var/log/apache2/ "${LOGDIRECTORY}/" && chown -R www-data.www-data "${LOGDIRECTORY}"
 fi

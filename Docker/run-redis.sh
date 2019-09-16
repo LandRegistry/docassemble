@@ -47,6 +47,13 @@ function stopfunc {
 }
 
 trap stopfunc SIGINT SIGTERM
+echo "starting redis server"
+redis-server /etc/redis/redis.conf & 
 
-redis-server /etc/redis/redis.conf &
+
+echo "loading redis base data"
+for redisfile in /usr/share/docassemble/redis/*.redis; do 
+    cat $redisfile | redis-cli --pipe
+done
+
 wait %1

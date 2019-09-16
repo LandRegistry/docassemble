@@ -21,10 +21,10 @@ python -m docassemble.webapp.restart
 #    supervisorctl --serverurl http://localhost:9001 start apache2 || exit 1
 #fi
 
-if [[ $CONTAINERROLE =~ .*:(all|celery):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|celery):.* ]]; then
     supervisorctl --serverurl http://localhost:9001 stop celery || exit 1
     if [[ $CONTAINERROLE =~ .*:(all|rabbitmq):.* ]]; then
-	supervisorctl --serverurl http://localhost:9001 stop rabbitmq || exit 1
+	    supervisorctl --serverurl http://localhost:9001 stop rabbitmq || exit 1
     fi
     sleep 1
     if [[ $CONTAINERROLE =~ .*:(all|rabbitmq):.* ]]; then
@@ -33,7 +33,7 @@ if [[ $CONTAINERROLE =~ .*:(all|celery):.* ]]; then
     supervisorctl --serverurl http://localhost:9001 start celery || exit 1
 fi
 
-if [[ $CONTAINERROLE =~ .*:(all|web):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|web):.* ]]; then
     supervisorctl --serverurl http://localhost:9001 stop websockets || exit 1
     sleep 1
     supervisorctl --serverurl http://localhost:9001 start websockets || exit 1

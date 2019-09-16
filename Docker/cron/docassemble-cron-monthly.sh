@@ -15,6 +15,6 @@ source /dev/stdin < <(su -c "source \"${DA_ACTIVATE}\" && python -m docassemble.
 set -- $LOCALE
 export LANG=$1
 
-if [[ $CONTAINERROLE =~ .*:(all|cron):.* ]]; then
+if [[ $CONTAINERROLE =~ .*:(all|lr|cron):.* ]]; then
     "${DA_ROOT}/webapp/run-cron.sh" cron_monthly
 fi
