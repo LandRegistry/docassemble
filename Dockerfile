@@ -6,6 +6,9 @@ deb http://deb.debian.org/debian stretch-updates main\n\
 deb http://security.debian.org/debian-security stretch/updates main\n\
 deb http://ftp.debian.org/debian stretch-backports main" > /etc/apt/sources.list\
 && apt-get -y update'
+
+RUN DEBIAN_FRONTEND=noninteractive bash -c "groupadd docassemble; useradd -ms /usr/bin/bash -g docassemble docassemble;  usermod -a -G www-data docassemble ; usermod -a -G docassemble www-data"
+
 RUN DEBIAN_FRONTEND=noninteractive \
 bash -c \
 "until apt-get -q -y install \
@@ -187,6 +190,7 @@ cd /tmp \
    /usr/share/docassemble/config \
    /usr/share/docassemble/webapp \
    /usr/share/docassemble/files \
+   /usr/share/docassemble/initialize \
    /var/www/.pip \
    /var/www/.cache \
    /usr/share/docassemble/log \
@@ -216,6 +220,7 @@ ln -s /var/mail/mail /var/mail/root \
 && cp /tmp/docassemble/Docker/pip.conf /usr/share/docassemble/local/ \
 && cp /tmp/docassemble/Docker/pip.conf /usr/share/docassemble/local3.5/ \
 && cp /tmp/docassemble/Docker/config/* /usr/share/docassemble/config/ \
+&& cp -R /tmp/docassemble/Docker/initialize/* /usr/share/docassemble/initialize/ \
 && cp /tmp/docassemble/Docker/cgi-bin/index.sh /usr/lib/cgi-bin/ \
 && cp /tmp/docassemble/Docker/syslog-ng.conf /usr/share/docassemble/webapp/syslog-ng.conf \
 && cp /tmp/docassemble/Docker/syslog-ng-docker.conf /usr/share/docassemble/webapp/syslog-ng-docker.conf \
@@ -237,6 +242,7 @@ ln -s /var/mail/mail /var/mail/root \
 && cp /tmp/docassemble/Docker/config/exim4-main /etc/exim4/conf.d/main/01_docassemble \
 && cp /tmp/docassemble/Docker/config/exim4-acl /etc/exim4/conf.d/acl/29_docassemble \
 && cp /tmp/docassemble/Docker/config/exim4-update /etc/exim4/update-exim4.conf.conf \
+&& cp -R /tmp/docassemble/Docker/redis /usr/share/docassemble \
 && update-exim4.conf \
 && bash -c \
 "chown www-data.www-data /usr/share/docassemble/config \
@@ -261,32 +267,32 @@ ln -s /var/mail/mail /var/mail/root \
 && update-locale
 
 USER www-data
-RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
-bash -c \
-"cd /tmp \
-&& virtualenv /usr/share/docassemble/local \
-&& source /usr/share/docassemble/local/bin/activate \
-&& pip install --upgrade pip \
-&& pip install \
-   3to2 \
-   bcrypt \
-   flask \
-   flask-login \
-   flask-mail \
-   flask-sqlalchemy \
-   flask-wtf \
-   distutils2 \
-   passlib \
-   pycrypto \
-   six \
-&& pip install --upgrade \
-   'git+https://github.com/euske/pdfminer.git' \
-   simplekv==0.10.0 \
-   /tmp/docassemble/docassemble \
-   /tmp/docassemble/docassemble_base \
-   /tmp/docassemble/docassemble_demo \
-   /tmp/docassemble/docassemble_webapp \
-&& pip uninstall --yes mysqlclient MySQL-python &> /dev/null"
+RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
+bash -c \
+"cd /tmp \
+&& virtualenv /usr/share/docassemble/local \
+&& source /usr/share/docassemble/local/bin/activate \
+&& pip install --upgrade pip \
+&& pip install \
+   3to2 \
+   bcrypt \
+   flask \
+   flask-login \
+   flask-mail \
+   flask-sqlalchemy \
+   flask-wtf \
+   distutils2 \
+   passlib \
+   pycrypto \
+   six \
+&& pip install --upgrade \
+   'git+https://github.com/euske/pdfminer.git' \
+   simplekv==0.10.0 \
+   /tmp/docassemble/docassemble \
+   /tmp/docassemble/docassemble_base \
+   /tmp/docassemble/docassemble_demo \
+   /tmp/docassemble/docassemble_webapp \
+&& pip uninstall --yes mysqlclient MySQL-python &> /dev/null"
 
 USER www-data
 RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
@@ -349,6 +355,6 @@ LETSENCRYPTEMAIL="" \
 DBHOST="" \
 LOGSERVER="" \
 REDIS="" \
-RABBITMQ=""
+RABBITMQ="" \
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]
