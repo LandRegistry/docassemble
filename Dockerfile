@@ -180,6 +180,8 @@ qpdf; \
 do sleep 5; \
 done; \
 apt-get -q -y install -t stretch-backports libreoffice &> /dev/null"
+
+
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 cd /tmp \
 && mkdir -p /etc/ssl/docassemble \
@@ -204,14 +206,18 @@ cd /tmp \
 && apt-get -y install nodejs \
 && npm install -g azure-storage-cmd \
 && npm install -g mermaid.cli
+
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 cd /usr/share/docassemble \
+&& ls -la . \
 && git clone https://github.com/letsencrypt/letsencrypt \
 && cd letsencrypt \
 && ./letsencrypt-auto --help \
 && echo "host   all   all  0.0.0.0/0   md5" >> /etc/postgresql/9.6/main/pg_hba.conf \
 && echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
+
 COPY . /tmp/docassemble/
+
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 ln -s /var/mail/mail /var/mail/root \
 && cp /tmp/docassemble/docassemble_webapp/docassemble.wsgi /usr/share/docassemble/webapp/ \
@@ -355,6 +361,13 @@ LETSENCRYPTEMAIL="" \
 DBHOST="" \
 LOGSERVER="" \
 REDIS="" \
-RABBITMQ="" \
+RABBITMQ="" 
+
+
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
+cd /usr/share/docassemble \
+&& ls -la . \
+&& ls -la initialize 
+
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

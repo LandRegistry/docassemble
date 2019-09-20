@@ -3,8 +3,8 @@ exitpage: https://docassemble.org
 db:
   prefix: postgresql+psycopg2://
   name: docassemble
-  user: docassemble
-  password: abc123
+  user: docassemble_app
+  password: docassemble_app
   host: localhost
   port: Null
   table_prefix: Null
@@ -45,7 +45,7 @@ language: en
 locale: en_US.utf8
 default admin account:
   email: admin@admin.com
-  password: password
+  password: HM7Rr@wks
 voicerss:
   enable: False
   key: ae8734983948ebc98239e9898f998432

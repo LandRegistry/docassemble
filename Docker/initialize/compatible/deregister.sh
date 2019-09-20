@@ -1,8 +1,8 @@
 #! /bin/bash
 
-  su -c "source \"${DA_ACTIVATE}\" && python -m docassemble.webapp.deregister \"${DA_CONFIG_FILE}\"" docassemble
+  su -c "source \"${DA_ACTIVATE}\" && python -m docassemble.webapp.deregister \"${DA_CONFIG_FILE}\"" www-data
     if [ "${S3ENABLE:-false}" == "true" ] || [ "${AZUREENABLE:-false}" == "true" ]; then
-        time su -c "source \"${DA_ACTIVATE}\" && python -m docassemble.webapp.cloud_deregister" docassemble
+        time su -c "source \"${DA_ACTIVATE}\" && python -m docassemble.webapp.cloud_deregister"  www-data
     fi
     if [[ $CONTAINERROLE =~ .*:(all|lr|web):.* ]]; then
         backup_apache
