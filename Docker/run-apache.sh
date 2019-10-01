@@ -8,7 +8,7 @@ if [ "${DAPYTHONVERSION}" == "2" ]; then
     if [ "${DAPYTHONMANUAL:-0}" == "0" ]; then
 	WSGI_VERSION=`apt-cache policy libapache2-mod-wsgi | grep '^  Installed:' | awk '{print $2}'`
 	if [ "${WSGI_VERSION}" != '4.3.0-1' ]; then
-	    cd /tmp && wget http://http.us.debian.org/debian/pool/main/m/mod-wsgi/libapache2-mod-wsgi_4.3.0-1_amd64.deb && dpkg -i libapache2-mod-wsgi_4.3.0-1_amd64.deb && rm libapache2-mod-wsgi_4.3.0-1_amd64.deb
+	    cd /tmp && dpkg -i /tmp/docassemble/installers/libapache2-mod-wsgi_4.3.0-1_amd64.deb
 	fi
     else
 	apt-get remove -y libapache2-mod-wsgi-py3 &> /dev/null

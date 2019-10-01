@@ -1,4 +1,7 @@
 FROM debian:stretch
+
+RUN printf "Acquire::http::Pipeline-Depth 0;\nAcquire::http::No-Cache true;\nAcquire::BrokenProxy true;" > /etc/apt/apt.conf.d/99fixbadproxy
+
 RUN DEBIAN_FRONTEND=noninteractive \
 bash -c \
 'echo -e "deb http://deb.debian.org/debian stretch main contrib\n\
@@ -215,6 +218,17 @@ cd /usr/share/docassemble \
 && ./letsencrypt-auto --help \
 && echo "host   all   all  0.0.0.0/0   md5" >> /etc/postgresql/9.6/main/pg_hba.conf \
 && echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
+
+
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm bash -c ' \
+    mkdir -p /tmp/docassemble/installers/; \
+    wget -q https://github.com/jgm/pandoc/releases/download/2.7/pandoc-2.7-1-amd64.deb                  -o /tmp/docassemble/installers/pandoc-2.7-1-amd64.deb; \
+    wget -q http://http.us.debian.org/debian/pool/main/m/mod-wsgi/libapache2-mod-wsgi_4.3.0-1_amd64.deb -o /tmp/docassemble/installers/libapache2-mod-wsgi_4.3.0-1_amd64.deb; \
+    ';
+
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
+    ls -la /tmp/docassemble/installers/ ;
+
 
 COPY . /tmp/docassemble/
 
