@@ -5,7 +5,7 @@ db:
   name: docassemble
   user: docassemble_app
   password: docassemble_app
-  host: localhost
+  host: Null
   port: Null
   table_prefix: Null
 oauth:
@@ -44,7 +44,7 @@ default interview: docassemble.base:data/questions/default-interview.yml
 language: en
 locale: en_US.utf8
 default admin account:
-  email: admin@admin.com
+  email: question-ms@landregistry.gov.uk
   password: HM7Rr@wks
 voicerss:
   enable: False
@@ -75,3 +75,5 @@ root: /
 words:
   - docassemble.base:data/sources/us-words.yml
 allow non-idempotent questions: False
+
+
