@@ -205,7 +205,7 @@ echo "47 : Configure HTTPS" >&2
 source "${DA_INITIALIZE}/compatible/apache/configure_https_and_restart.sh"
 
 echo "48 : Register Docassemble Application" >&2
-source "${DA_INITIALIZE}/compatible/apache/register_docassemble.sh"
+source "${DA_INITIALIZE}/register_docassemble.sh"
 
 echo "49 : Start Cron" >&2
 source "${DA_INITIALIZE}/compatible/cron/start.sh"

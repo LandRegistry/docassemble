@@ -179,6 +179,7 @@ ghostscript \
 ttf-liberation \
 fonts-liberation \
 cm-super \
+libapache2-mod-wsgi-py3 \
 qpdf; \
 do sleep 5; \
 done; \
@@ -208,7 +209,7 @@ cd /tmp \
 && wget -qO- https://deb.nodesource.com/setup_6.x | bash - \
 && apt-get -y install nodejs \
 && npm install -g azure-storage-cmd \
-&& npm install -g mermaid.cli
+&& npm install -g mermaid.cli 
 
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 cd /usr/share/docassemble \
@@ -218,6 +219,7 @@ cd /usr/share/docassemble \
 && ./letsencrypt-auto --help \
 && echo "host   all   all  0.0.0.0/0   md5" >> /etc/postgresql/9.6/main/pg_hba.conf \
 && echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
+
 
 
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm bash -c ' \
@@ -278,13 +280,24 @@ ln -s /var/mail/mail /var/mail/root \
 && chmod ogu+r /usr/share/docassemble/config/config.yml.dist \
 && chmod 755 /etc/ssl/docassemble \
 && cd /tmp \
-&& wget https://bootstrap.pypa.io/get-pip.py \
+&& wget -q https://bootstrap.pypa.io/get-pip.py \
 && python get-pip.py \
 && rm -f get-pip.py \
 && pip install --upgrade virtualenv" \
 && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 && locale-gen \
 && update-locale
+
+
+
+
+RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
+bash -c '   mkdir -p /usr/share/nltk_data/corpora && \
+            mkdir -p /var/www/nltk_data/corpora  && \
+            mkdir -p /usr/share/nltk_data/chunkers && \
+            chown -R www-data.www-data /usr/share/nltk_data && \
+            chown -R www-data.www-data /var/www/nltk_data/corpora'
+
 
 USER www-data
 RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
@@ -312,7 +325,10 @@ bash -c \
    /tmp/docassemble/docassemble_base \
    /tmp/docassemble/docassemble_demo \
    /tmp/docassemble/docassemble_webapp \
-&& pip uninstall --yes mysqlclient MySQL-python &> /dev/null"
+&& pip uninstall --yes mysqlclient MySQL-python \
+ &> /dev/null";
+
+
 
 USER www-data
 RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
@@ -340,7 +356,25 @@ bash -c \
    /tmp/docassemble/docassemble_base \
    /tmp/docassemble/docassemble_demo \
    /tmp/docassemble/docassemble_webapp \
-&& pip3 uninstall --yes mysqlclient MySQL-python &> /dev/null"
+&& pip3 uninstall --yes mysqlclient MySQL-python &> /dev/null";
+
+RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
+bash -c '   cd /usr/share/nltk_data/corpora && \
+            wget https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/wordnet.zip         -O ./wordnet.zip && \
+            wget https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/wordnet_ic.zip      -O ./wordnet_ic.zip && \
+            wget https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/sentiwordnet.zip    -O ./sentiwordnet.zip && \
+            unzip wordnet.zip  && \
+            unzip wordnet_ic.zip  && \
+            unzip sentiwordnet.zip'
+
+            RUN LC_CTYPE=C.UTF-8 LANG=C.UTF-8 \
+bash -c ' cp -R /usr/share/nltk_data/corpora/* /var/www/nltk_data/corpora && \
+            python3 -m venv --copies /usr/share/docassemble/local3.5 &&\
+            source /usr/share/docassemble/local3.5/bin/activate &&\
+            python3 /tmp/docassemble/Docker/install_nltk.py &&\
+            chown -R www-data.www-data /usr/share/nltk_data/corpora && \
+            chown -R www-data.www-data /var/www/nltk_data/corpora  \
+            ';
 
 USER root
 RUN rm -rf /tmp/docassemble \

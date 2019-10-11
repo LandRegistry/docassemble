@@ -23,14 +23,14 @@ if [[ $CONTAINERROLE =~ .*:(all|lr|web):.* ]] && [ "$APACHERUNNING" = false ]; t
         a2dismod wsgi &> /dev/null
     fi
 
-    if [ "${WWWUID:-none}" != "none" ] && [ "${WWWGID:-none}" != "none" ] && [ `id -u docassemble` != $WWWUID ]; then
-        OLDUID=`id -u docassemble`
-        OLDGID=`id -g docassemble`
+    if [ "${WWWUID:-none}" != "none" ] && [ "${WWWGID:-none}" != "none" ] && [ `id -u www-data` != $WWWUID ]; then
+        OLDUID=`id -u www-data`
+        OLDGID=`id -g www-data`
 
-        usermod -o -u $WWWUID docassemble
-        groupmod -o -g $WWWGID docassemble
-        find / -user $OLDUID -exec chown -h docassemble {} \;
-        find / -group $OLDGID -exec chgrp -h docassemble {} \;
+        usermod -o -u $WWWUID www-data
+        groupmod -o -g $WWWGID www-data
+        find / -user $OLDUID -exec chown -h www-data {} \;
+        find / -group $OLDGID -exec chgrp -h www-data {} \;
         if [[ $CONTAINERROLE =~ .*:(all|lr|celery):.* ]] && [ "$CELERYRUNNING" = false ]; then
             supervisorctl --serverurl http://localhost:9001 stop celery
         fi
@@ -52,7 +52,10 @@ if [[ $CONTAINERROLE =~ .*:(all|lr|web):.* ]] && [ "$APACHERUNNING" = false ]; t
     if [ "${DAPYTHONMANUAL:-0}" == "3" ]; then
         echo -e "LoadModule wsgi_module ${DA_PYTHON:-${DA_ROOT}/${DA_DEFAULT_LOCAL}}/lib/python3.5/site-packages/mod_wsgi/server/mod_wsgi-py35.cpython-35m-x86_64-linux-gnu.so" >> /etc/apache2/conf-available/docassemble.conf
     fi
+    echo -e "<IfModule mod_wsgi.c>" >> /etc/apache2/conf-available/docassemble.conf
     echo -e "WSGIPythonHome ${DA_PYTHON:-${DA_ROOT}/${DA_DEFAULT_LOCAL}}" >> /etc/apache2/conf-available/docassemble.conf
+    echo -e "</IfModule>" >> /etc/apache2/conf-available/docassemble.conf
+
     echo -e "Timeout ${DATIMEOUT:-60}\nDefine DAHOSTNAME ${DAHOSTNAME}\nDefine DAPOSTURLROOT ${POSTURLROOT}\nDefine DAWSGIROOT ${WSGIROOT}\nDefine DASERVERADMIN ${SERVERADMIN}\nDefine DAWEBSOCKETSIP ${DAWEBSOCKETSIP}\nDefine DAWEBSOCKETSPORT ${DAWEBSOCKETSPORT}\nDefine DACROSSSITEDOMAINVALUE *" >> /etc/apache2/conf-available/docassemble.conf
     if [ "${BEHINDHTTPSLOADBALANCER:-false}" == "true" ]; then
         echo "Listen 8081" >> /etc/apache2/ports.conf
