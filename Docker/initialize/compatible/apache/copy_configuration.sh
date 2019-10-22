@@ -1,10 +1,16 @@
 #! /bin/bash
 
 if [[ $CONTAINERROLE =~ .*:(all|web|lr|log):.* ]]; then
-    a2dissite -q 000-default &> /dev/null
-    a2dissite -q default-ssl &> /dev/null
+
+    # Unlink the default configuration - https://unix.stackexchange.com/questions/280067/have-rm-not-report-when-a-file-is-missing
+    rm -f /etc/apache2/sites-enabled/000-default.conf
+    rm -f /etc/apache2/sites-enabled/default-ssl.conf
+    
+    # Unlink the available configuration
     rm -f /etc/apache2/sites-available/000-default.conf
     rm -f /etc/apache2/sites-available/default-ssl.conf
+
+
     if [ "${DAHOSTNAME:-none}" != "none" ]; then
         if [ ! -f /etc/apache2/sites-available/docassemble-ssl.conf ]; then
             cp "${DA_ROOT}/config/docassemble-ssl.conf.dist" /etc/apache2/sites-available/docassemble-ssl.conf

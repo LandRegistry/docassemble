@@ -211,6 +211,15 @@ cd /tmp \
 && npm install -g azure-storage-cmd \
 && npm install -g mermaid.cli 
 
+# Clear the apache configuration
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
+    ls -la /etc/apache2/sites-enabled/ \
+&&  rm -f /etc/apache2/sites-enabled/000-default.conf \
+&&  rm -f /etc/apache2/sites-enabled/default-ssl.conf \
+&&  rm -f /etc/apache2/sites-available/000-default.conf \
+&&  rm -f /etc/apache2/sites-available/default-ssl.conf \
+&&  ls -la /etc/apache2/sites-enabled/ 
+
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 cd /usr/share/docassemble \
 && ls -la . \
@@ -219,6 +228,8 @@ cd /usr/share/docassemble \
 && ./letsencrypt-auto --help \
 && echo "host   all   all  0.0.0.0/0   md5" >> /etc/postgresql/9.6/main/pg_hba.conf \
 && echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
+
+
 
 
 

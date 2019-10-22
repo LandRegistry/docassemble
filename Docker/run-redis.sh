@@ -47,13 +47,42 @@ function stopfunc {
 }
 
 trap stopfunc SIGINT SIGTERM
-echo "starting redis server"
+echo "starting redis server" >&2
+
 redis-server /etc/redis/redis.conf & 
+echo "starting redis server" >&2
 
 
-echo "loading redis base data"
+echo "loading redis base data" >&2
+
+redis_metrics=$(redis-cli ping)
+
+echo "waiting for redis to be available" >&2;
+COUNTER=0
+
+STOP=false;
+CONTINUE=true
+if [[ $redis_metrics = PONG ]]; then 
+        CONTINUE=false
+fi
+while $CONTINUE; do 
+        let COUNTER+=1
+        echo "$COUNTER [ $STOP ] [ $CONTINUE ] : waiting for 30 seconds" >&2
+        sleep 0.5
+        if [ $COUNTER -gt 20 ]; then
+                STOP=true;
+        fi;
+        if $STOP; then 
+                CONTINUE=false
+        fi;
+        if  [[ $redis_metrics == "PONG" ]] ; then
+                CONTINUE=false
+        fi
+done;
+
 for redisfile in /usr/share/docassemble/redis/*.redis; do 
-    cat $redisfile | redis-cli --pipe
+        cat $redisfile | redis-cli --pipe
 done
-
 wait %1
+
+#echo set "da:api:userid:1:key:B4BIU9HY9OUKY6TSGRJDCUMZN8CY2AQ2:info" "{\"name\":\"Default\",\"method\":\"none\",\"constraints\":[]}"| redis-cli --pipe

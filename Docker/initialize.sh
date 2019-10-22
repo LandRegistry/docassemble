@@ -176,14 +176,14 @@ fi
 echo "41 : Delete Port Configuration" >&2
 source "${DA_INITIALIZE}/compatible/apache/delete_port_configuration.sh"
 
-echo "42A : Copy apache certificates into place" >&2
-source "${DA_INITIALIZE}/compatible/apache/copy_configuration.sh"
+#echo "42A : Copy apache certificates into place" >&2
+#source "${DA_INITIALIZE}/compatible/apache/copy_certificates.sh"
 
-echo "42B : Copy exim certificates into place" >&2
-source "${DA_INITIALIZE}/compatible/exim/copy_configuration.sh"
+#echo "42B : Copy exim certificates into place" >&2
+#source "${DA_INITIALIZE}/compatible/exim/copy_certificates.sh"
 
-echo "42C : Copy exim certificates into place" >&2
-source "${DA_INITIALIZE}/compatible/install_certificates.sh"
+#echo "42C : Copy exim certificates into place" >&2
+#source "${DA_INITIALIZE}/compatible/install_certificates.sh"
 
 function backup_apache {
     source "${DA_INITIALIZE}/compatible/apache/backup.sh"
