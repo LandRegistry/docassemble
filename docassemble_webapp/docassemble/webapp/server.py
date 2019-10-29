@@ -2528,7 +2528,7 @@ def summarize_results(results, logmessages, html=True):
     return output
 
 def install_zip_package(packagename, file_number):
-    #logmessage("install_zip_package: " + packagename + " " + str(file_number))
+    logmessage("install_zip_package: " + packagename + " " + str(file_number))
     existing_package = Package.query.filter_by(name=packagename).order_by(Package.id.desc()).with_for_update().first()
     if existing_package is None:
         package_auth = PackageAuth(user_id=current_user.id)
@@ -12660,6 +12660,7 @@ def update_package():
                 saved_file.save()
                 saved_file.finalize()
                 pkgname = get_package_name_from_zip(zippath)
+                
                 if user_can_edit_package(pkgname=pkgname):
                     install_zip_package(pkgname, file_number)
                     result = docassemble.webapp.worker.update_packages.apply_async(link=docassemble.webapp.worker.reset_server.s())

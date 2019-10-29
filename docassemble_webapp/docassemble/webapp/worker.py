@@ -713,7 +713,7 @@ def reset_server(result):
         sys.stderr.write("reset_server in worker: not resetting because result did not succeed.\n")
         return result
     if USING_SUPERVISOR:
-        if re.search(r':(web|celery|all):', container_role):
+        if re.search(r':(web|lr|celery|all):', container_role):
             args = [SUPERVISORCTL, '-s', 'http://localhost:9001', 'start', 'reset']
             result = call(args)
             sys.stderr.write("reset_server in worker: called " + ' '.join(args) + "\n")

@@ -2,15 +2,35 @@ FROM debian:stretch
 
 RUN printf "Acquire::http::Pipeline-Depth 0;\nAcquire::http::No-Cache true;\nAcquire::BrokenProxy true;" > /etc/apt/apt.conf.d/99fixbadproxy
 
+RUN printf "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d
+
 RUN DEBIAN_FRONTEND=noninteractive \
 bash -c \
 'echo -e "deb http://deb.debian.org/debian stretch main contrib\n\
 deb http://deb.debian.org/debian stretch-updates main\n\
 deb http://security.debian.org/debian-security stretch/updates main\n\
 deb http://ftp.debian.org/debian stretch-backports main" > /etc/apt/sources.list\
-&& apt-get -y update'
+'
+
+RUN DEBIAN_FRONTEND=noninteractive bash -c "apt-get update"
 
 RUN DEBIAN_FRONTEND=noninteractive bash -c "groupadd docassemble; useradd -ms /usr/bin/bash -g docassemble docassemble;  usermod -a -G www-data docassemble ; usermod -a -G docassemble www-data"
+
+RUN DEBIAN_FRONTEND=noninteractive bash -c "apt-get -q -y install apache2"
+
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm rm /usr/sbin/policy-rc.d ;
+
+# Clear the apache configuration
+RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
+    ls -la /etc/apache2/sites-enabled/ \
+&&  mv /etc/apache2/sites-enabled/ /etc/apache2/.legacy-sites-enabled/ \
+&&  rm -f /etc/apache2/.legacy-sites-enabled/000-default.conf \
+&&  rm -f /etc/apache2/.legacy-sites-enabled/default-ssl.conf \
+&&  rm -f /etc/apache2/sites-available/000-default.conf \
+&&  rm -f /etc/apache2/sites-available/default-ssl.conf \
+&&  mkdir -p /etc/apache2/sites-enabled/ \
+&&  chmod 755 /etc/apache2/sites-enabled/ \
+&&  ls -la /etc/apache2/sites-enabled/ 
 
 RUN DEBIAN_FRONTEND=noninteractive \
 bash -c \
@@ -23,8 +43,7 @@ wget \
 unzip \
 git \
 locales \
-apache2 \
-postgresql \
+postgresql-client \
 libapache2-mod-xsendfile \
 libffi-dev \
 libffi6 \
@@ -186,6 +205,7 @@ done; \
 apt-get -q -y install -t stretch-backports libreoffice &> /dev/null"
 
 
+
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 cd /tmp \
 && mkdir -p /etc/ssl/docassemble \
@@ -211,24 +231,13 @@ cd /tmp \
 && npm install -g azure-storage-cmd \
 && npm install -g mermaid.cli 
 
-# Clear the apache configuration
-RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
-    ls -la /etc/apache2/sites-enabled/ \
-&&  rm -f /etc/apache2/sites-enabled/000-default.conf \
-&&  rm -f /etc/apache2/sites-enabled/default-ssl.conf \
-&&  rm -f /etc/apache2/sites-available/000-default.conf \
-&&  rm -f /etc/apache2/sites-available/default-ssl.conf \
-&&  ls -la /etc/apache2/sites-enabled/ 
 
 RUN DEBIAN_FRONTEND=noninteractive TERM=xterm \
 cd /usr/share/docassemble \
 && ls -la . \
 && git clone https://github.com/letsencrypt/letsencrypt \
 && cd letsencrypt \
-&& ./letsencrypt-auto --help \
-&& echo "host   all   all  0.0.0.0/0   md5" >> /etc/postgresql/9.6/main/pg_hba.conf \
-&& echo "listen_addresses = '*'" >> /etc/postgresql/9.6/main/postgresql.conf
-
+&& ./letsencrypt-auto --help ;
 
 
 
