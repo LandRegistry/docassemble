@@ -12,8 +12,7 @@ source "${DA_ACTIVATE}"
 
 export CONTAINERROLE=":${CONTAINERROLE:-all}:"
 export HOME=/var/www
-
-python -m docassemble.webapp.restart
+source "${DA_ROOT}/${DA_DEFAULT_LOCAL}}/bin/python3 -m docassemble.webapp.restart"
 
 #if [[ $CONTAINERROLE =~ .*:(all|web):.* ]]; then
 #    supervisorctl --serverurl http://localhost:9001 stop apache2 || exit 1
